@@ -74,8 +74,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Disclosure Area */}
-          <div className="border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0">
-            <div className="flex flex-col gap-2 overflow-hidden">
+          <div className="border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
               {chartConfigs.map((config) => (
                 <Chart
                   key={config.title}
@@ -108,7 +107,6 @@ const App: React.FC = () => {
 
               {/* Spinbox */}
               <Spinbox />
-            </div>
           </div>
         </div>
 
