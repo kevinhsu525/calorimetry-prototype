@@ -112,7 +112,7 @@ const App: React.FC = () => {
 
         {/* Right Panel - Readings */}
         <div className="w-[274px] bg-[#141415] rounded p-4 shrink-0 overflow-hidden" style={{ height: '859px' }}>
-          <Readings />
+          <Readings spinboxValue={spinboxValue} />
         </div>
       </div>
     </div>
