@@ -32,9 +32,9 @@ const Chart: React.FC<ChartProps> = ({
 
       {/* Chart area */}
       <div className="flex-1 flex flex-col gap-1 min-w-0">
-        <div className={`flex gap-1 items-center ${compact ? 'h-[70px]' : 'h-[92px]'}`}>
+        <div className={`flex gap-1 items-center ${compact ? 'h-[72px]' : 'h-[92px]'}`}>
           {/* Y-axis labels */}
-          <div className={`flex flex-col items-end justify-between w-6 shrink-0 text-[#babdc0] text-sm ${compact ? 'h-[74px]' : 'h-[96px]'}`}>
+          <div className={`flex flex-col items-end justify-between w-6 shrink-0 text-[#babdc0] text-sm ${compact ? 'h-[76px]' : 'h-[96px]'}`}>
             <span className="leading-5">{maxValue}</span>
             <span className="leading-5">{midValue}</span>
             <span className="leading-5 text-right w-full">{minValue}</span>
