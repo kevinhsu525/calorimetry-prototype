@@ -10,7 +10,7 @@ const timeRangeOptions = ['30 min', '1 h', '2 h', '3 h', '6 h'];
 const TimeRangeButtons: React.FC<TimeRangeButtonsProps> = ({ value, onChange }) => {
   return (
     <div className="flex rounded overflow-hidden border border-[#525457] shrink-0">
-      {timeRangeOptions.map((option) => (
+      {timeRangeOptions.map((option, index) => (
         <button
           key={option}
           onClick={() => onChange(option)}
@@ -18,7 +18,8 @@ const TimeRangeButtons: React.FC<TimeRangeButtonsProps> = ({ value, onChange }) 
             ${value === option 
               ? 'bg-[#61587f] text-[#fafbfd] font-bold' 
               : 'bg-[#373b3d] text-[#babdc0] hover:bg-[#4a4e50]'
-            }`}
+            }
+            ${index > 0 ? 'border-l border-[#525457]' : ''}`}
         >
           {option}
         </button>

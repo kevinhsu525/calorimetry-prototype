@@ -47,7 +47,7 @@ const Spinbox: React.FC<SpinboxProps> = ({ value, maxValue, onChange }) => {
         </button>
 
         {/* Value display */}
-        <div className="flex-1 flex items-center justify-center h-[66px] border-x border-[#525457] px-2">
+        <div className="flex-1 flex items-center justify-center h-[66px] border-x border-[#525457] px-2 bg-[#373b3d]">
           <span className="text-[#fafbfd] text-2xl text-center whitespace-nowrap">
             {formatValue(value)}
           </span>
