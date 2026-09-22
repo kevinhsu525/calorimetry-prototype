@@ -74,7 +74,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Disclosure Area */}
-          <div className="border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
+          <div className="border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-hidden">
               {chartConfigs.map((config) => (
                 <Chart
                   key={config.title}
