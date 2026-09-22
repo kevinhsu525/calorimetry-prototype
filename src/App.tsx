@@ -57,11 +57,10 @@ const App: React.FC = () => {
       <div className="flex flex-1 gap-4 p-6 overflow-hidden" style={{ height: '907px' }}>
         {/* Left Panel - Charts */}
         <div className="flex flex-col gap-3 w-[571px] shrink-0" style={{ height: '859px' }}>
-          {/* Time Range Buttons */}
-          <TimeRangeButtons />
-
-          {/* MVexp Chart (Primary) */}
+          {/* Primary Time Range + MVexp Chart Container */}
           <div className="bg-[#141415] rounded p-3 flex flex-col gap-2 shrink-0">
+            <TimeRangeButtons />
+
             <Chart
               title="MVexp"
               unit="l/min"
