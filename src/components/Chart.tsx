@@ -32,9 +32,9 @@ const Chart: React.FC<ChartProps> = ({
 
       {/* Chart area */}
       <div className="flex-1 flex flex-col gap-1 min-w-0">
-        <div className={`flex gap-1 items-center ${compact ? 'h-[72px]' : 'h-[92px]'}`}>
+        <div className={`flex gap-1 items-center ${compact ? 'h-[90px]' : 'h-[92px]'}`}>
           {/* Y-axis labels */}
-          <div className={`flex flex-col items-end justify-between w-6 shrink-0 text-[#babdc0] text-sm ${compact ? 'h-[76px]' : 'h-[96px]'}`}>
+          <div className={`flex flex-col items-end justify-between w-6 shrink-0 text-[#babdc0] text-sm ${compact ? 'h-[94px]' : 'h-[96px]'}`}>
             <span className="leading-5">{maxValue}</span>
             <span className="leading-5">{midValue}</span>
             <span className="leading-5 text-right w-full">{minValue}</span>
@@ -73,14 +73,15 @@ const Chart: React.FC<ChartProps> = ({
           </div>
         </div>
 
-        {/* X-axis labels */}
-        <div className="flex justify-between pl-6 text-[#babdc0] text-sm">
-          <span className="leading-5">15:30</span>
-          <span className="leading-5">21:30</span>
-          <span className="leading-5">03 Mar</span>
-          <span className="leading-5">09:30</span>
-          <span className="leading-5">15:30</span>
-        </div>
+        {!compact && (
+          <div className="flex justify-between pl-6 text-[#babdc0] text-sm">
+            <span className="leading-5">15:30</span>
+            <span className="leading-5">21:30</span>
+            <span className="leading-5">03 Mar</span>
+            <span className="leading-5">09:30</span>
+            <span className="leading-5">15:30</span>
+          </div>
+        )}
       </div>
     </div>
   );
