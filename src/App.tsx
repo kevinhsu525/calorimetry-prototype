@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import Header from './components/Header';
 import TimeRangeButtons from './components/TimeRangeButtons';
-import Chart, { generateTimeLabels } from './components/Chart';
+import Chart from './components/Chart';
 import Readings from './components/Readings';
 import Spinbox from './components/Spinbox';
 import TimeWindowSelector from './components/TimeWindowSelector';
+import DynamicTimeAxis from './components/DynamicTimeAxis';
 import {
   timeRangeToMinutes,
   calculateSelectorWidth,
@@ -43,11 +44,6 @@ const App: React.FC = () => {
     });
     return paths;
   }, [windowStart, windowEnd, selectedTimeRange]);
-
-  // Generate dynamic time labels for sub-charts
-  const subChartTimeLabels = useMemo(() => {
-    return generateTimeLabels(windowStart, windowEnd);
-  }, [windowStart, windowEnd]);
 
   const handleTimeRangeChange = (value: string) => {
     setSelectedTimeRange(value);
@@ -115,27 +111,13 @@ const App: React.FC = () => {
                     minValue={meta.minValue}
                     pathData={subChartPaths[title]}
                     viewBoxHeight={meta.viewBoxHeight}
-                    showTimeLabels
-                    timeLabels={subChartTimeLabels}
                   />
                 );
               })}
 
-              {/* Time Range Picker Area */}
+              {/* Time Range Picker Area - Dynamic Time Axis */}
               <div className="flex flex-col gap-2 pl-[104px] shrink-0">
-                <div className="flex justify-between text-[#babdc0] text-sm">
-                  <span>15:30</span>
-                  <span>21:30</span>
-                  <span>03 Mar</span>
-                  <span>09:30</span>
-                  <span>15:30</span>
-                </div>
-
-                <div className="relative h-[20px] flex items-center">
-                  <div className="absolute left-[20%] right-[30%] h-full bg-[rgba(190,119,243,0.2)] border-x-2 border-[#b39cf1] rounded-sm" />
-                  <div className="absolute left-[20%] top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-5 bg-[#b39cf1] rounded-full" />
-                  <div className="absolute right-[30%] top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-5 bg-[#b39cf1] rounded-sm" />
-                </div>
+                <DynamicTimeAxis windowStart={windowStart} windowEnd={windowEnd} />
               </div>
 
               {/* Flex spacer to push Spinbox to bottom */}
