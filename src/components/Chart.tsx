@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 interface ChartProps {
   title: string;
@@ -10,6 +10,7 @@ interface ChartProps {
   viewBoxHeight: number;
   showUnit?: boolean;
   compact?: boolean;
+  overlay?: ReactNode;
 }
 
 const Chart: React.FC<ChartProps> = ({ 
@@ -20,7 +21,8 @@ const Chart: React.FC<ChartProps> = ({
   minValue, 
   pathData, 
   viewBoxHeight,
-  compact = false
+  compact = false,
+  overlay
 }) => {
   return (
     <div className="flex gap-3 items-start w-full">
@@ -70,6 +72,13 @@ const Chart: React.FC<ChartProps> = ({
                 <div className="w-full h-px bg-[#525457]" />
               </div>
             </div>
+
+            {/* Overlay (e.g., TimeWindowSelector) */}
+            {overlay && (
+              <div className="absolute inset-0 z-[5]">
+                {overlay}
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,5 +1,9 @@
 // Waveform generation utilities for Calorimetry charts
 
+const TOTAL_HOURS = 24;
+const POINTS_PER_HOUR = 60; // 1 point per minute
+const TOTAL_POINTS = TOTAL_HOURS * POINTS_PER_HOUR; // 1440 points for 24h
+
 /**
  * Convert time range string to minutes
  */
@@ -16,10 +20,6 @@ export function timeRangeToMinutes(range: string): number {
 
 /**
  * Generate smooth random waveform data using random walk with smoothing
- * @param baseline - center value of the waveform
- * @param amplitude - maximum deviation from baseline
- * @param points - number of data points to generate
- * @returns Array of data points
  */
 export function generateWaveData(
   baseline: number,
@@ -32,10 +32,8 @@ export function generateWaveData(
   const maxVal = baseline + amplitude;
 
   for (let i = 0; i < points; i++) {
-    // Random walk with small steps
     const change = (Math.random() - 0.5) * amplitude * 0.15;
     current += change;
-    // Clamp to valid range
     current = Math.max(minVal, Math.min(maxVal, current));
     data.push(current);
   }
@@ -58,12 +56,6 @@ export function generateWaveData(
 
 /**
  * Convert data points to SVG path string
- * @param data - array of data values
- * @param minValue - minimum value for Y-axis scaling
- * @param maxValue - maximum value for Y-axis scaling
- * @param viewBoxWidth - SVG viewBox width
- * @param viewBoxHeight - SVG viewBox height
- * @returns SVG path string
  */
 export function dataToSvgPath(
   data: number[],
@@ -75,7 +67,6 @@ export function dataToSvgPath(
   const range = maxValue - minValue;
   if (data.length === 0) return '';
 
-  // Map data value to Y coordinate (invert because SVG Y grows downward)
   const mapY = (value: number) => {
     return ((maxValue - value) / range) * viewBoxHeight;
   };
@@ -92,65 +83,173 @@ export function dataToSvgPath(
   return path;
 }
 
+// Store generated 24h data to keep it consistent
+let cachedMVexpData: number[] | null = null;
+let cachedSubChartData: Record<string, number[]> = {};
+
 /**
- * Generate MVexp waveform data based on time range
- * Normal range: 2.2 - 3.8 L/min, baseline ~3.0
+ * Generate or retrieve cached 24h MVexp data
  */
-export function generateMVexpWave(range: string): string {
-  const minutes = timeRangeToMinutes(range);
-  // More points for longer time ranges
-  const points = Math.max(50, minutes);
-  const data = generateWaveData(3.0, 1.5, points);
+function getMVexp24hData(): number[] {
+  if (!cachedMVexpData) {
+    cachedMVexpData = generateWaveData(3.0, 1.5, TOTAL_POINTS);
+  }
+  return cachedMVexpData;
+}
+
+/**
+ * Generate or retrieve cached 24h sub-chart data
+ */
+function getSubChart24hData(title: string): number[] {
+  if (!cachedSubChartData[title]) {
+    let baseline: number;
+    let amplitude: number;
+
+    switch (title) {
+      case 'VCO2':
+        baseline = 150;
+        amplitude = 60;
+        break;
+      case 'VO2':
+        baseline = 180;
+        amplitude = 50;
+        break;
+      case 'RQ':
+        baseline = 1.0;
+        amplitude = 0.25;
+        break;
+      case 'EE':
+        baseline = 1200;
+        amplitude = 300;
+        break;
+      default:
+        baseline = 50;
+        amplitude = 10;
+    }
+
+    cachedSubChartData[title] = generateWaveData(baseline, amplitude, TOTAL_POINTS);
+  }
+  return cachedSubChartData[title];
+}
+
+/**
+ * Calculate selector width percentage based on selected time range
+ * Width = selectedMinutes / 24h
+ */
+export function calculateSelectorWidth(selectedRange: string): number {
+  const selectedMinutes = timeRangeToMinutes(selectedRange);
+  return (selectedMinutes / (TOTAL_HOURS * 60)) * 100;
+}
+
+/**
+ * Generate MVexp waveform for the full 24h view
+ */
+export function generateMVexpWave24h(): string {
+  const data = getMVexp24hData();
   return dataToSvgPath(data, 0, 6, 100, 44.523);
 }
 
 /**
- * Generate sub-chart waveform data
+ * Generate sub-chart waveform from a specific time window
+ * @param title - chart title
+ * @param startPercent - start position (0-100)
+ * @param widthPercent - window width as percentage of total
  */
-export function generateSubChartWave(
+export function generateSubChartWindow(
   title: string,
-  range: string
+  startPercent: number,
+  widthPercent: number
 ): string {
-  const minutes = timeRangeToMinutes(range);
-  const points = Math.max(50, minutes);
+  const data24h = getSubChart24hData(title);
+  
+  const startIndex = Math.floor((startPercent / 100) * TOTAL_POINTS);
+  const windowPoints = Math.floor((widthPercent / 100) * TOTAL_POINTS);
+  const endIndex = Math.min(startIndex + windowPoints, TOTAL_POINTS);
+  
+  const windowData = data24h.slice(startIndex, endIndex);
+  
+  if (windowData.length < 2) {
+    // Fallback: return a flat line
+    return 'M0 17 L100 17';
+  }
 
-  let baseline: number;
-  let amplitude: number;
   let minVal: number;
   let maxVal: number;
 
   switch (title) {
     case 'VCO2':
-      baseline = 150;
-      amplitude = 60;
       minVal = 0;
       maxVal = 200;
       break;
     case 'VO2':
-      baseline = 180;
-      amplitude = 50;
       minVal = 0;
       maxVal = 200;
       break;
     case 'RQ':
-      baseline = 1.0;
-      amplitude = 0.25;
       minVal = 0.5;
       maxVal = 1.5;
       break;
     case 'EE':
-      baseline = 1200;
-      amplitude = 300;
       minVal = 0;
       maxVal = 1500;
       break;
     default:
-      baseline = 50;
-      amplitude = 10;
       minVal = 0;
       maxVal = 100;
   }
 
-  const data = generateWaveData(baseline, amplitude, points);
-  return dataToSvgPath(data, minVal, maxVal, 100, 34);
+  return dataToSvgPath(windowData, minVal, maxVal, 100, 34);
+}
+
+/**
+ * Generate MVexp waveform from a specific time window (for sub-chart detail view)
+ * Not used directly - MVexp always shows 24h
+ */
+export function generateMVexpWave(_range: string): string {
+  return generateMVexpWave24h();
+}
+
+/**
+ * Legacy function for sub-chart waveform (generates full 24h now)
+ */
+export function generateSubChartWave(
+  title: string,
+  _range: string
+): string {
+  const data24h = getSubChart24hData(title);
+  
+  let minVal: number;
+  let maxVal: number;
+
+  switch (title) {
+    case 'VCO2':
+      minVal = 0;
+      maxVal = 200;
+      break;
+    case 'VO2':
+      minVal = 0;
+      maxVal = 200;
+      break;
+    case 'RQ':
+      minVal = 0.5;
+      maxVal = 1.5;
+      break;
+    case 'EE':
+      minVal = 0;
+      maxVal = 1500;
+      break;
+    default:
+      minVal = 0;
+      maxVal = 100;
+  }
+
+  return dataToSvgPath(data24h, minVal, maxVal, 100, 34);
+}
+
+/**
+ * Clear cached data (useful when regenerating)
+ */
+export function clearWaveformCache(): void {
+  cachedMVexpData = null;
+  cachedSubChartData = {};
 }

@@ -4,7 +4,14 @@ import TimeRangeButtons from './components/TimeRangeButtons';
 import Chart from './components/Chart';
 import Readings from './components/Readings';
 import Spinbox from './components/Spinbox';
-import { timeRangeToMinutes, generateMVexpWave, generateSubChartWave } from './utils/waveform';
+import TimeWindowSelector from './components/TimeWindowSelector';
+import {
+  timeRangeToMinutes,
+  calculateSelectorWidth,
+  generateMVexpWave,
+  generateSubChartWindow,
+  clearWaveformCache,
+} from './utils/waveform';
 
 const chartTitles = ['VCO2', 'VO2', 'RQ', 'EE'] as const;
 
@@ -18,25 +25,41 @@ const chartMeta: Record<string, { unit: string; maxValue: string; midValue: stri
 const App: React.FC = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1 h');
   const [spinboxValue, setSpinboxValue] = useState<number>(60);
+  const [windowStart, setWindowStart] = useState<number>(0);
+  const [windowEnd, setWindowEnd] = useState<number>(100);
 
   const maxMinutes = timeRangeToMinutes(selectedTimeRange);
+  const selectorWidthPercent = calculateSelectorWidth(selectedTimeRange);
 
-  // Generate waveforms based on selected time range
+  // Generate 24h MVexp wave
   const mvexpPath = useMemo(() => generateMVexpWave(selectedTimeRange), [selectedTimeRange]);
 
+  // Generate sub-chart waves based on time window
   const subChartPaths = useMemo(() => {
     const paths: Record<string, string> = {};
+    const widthPercent = windowEnd - windowStart;
     chartTitles.forEach((title) => {
-      paths[title] = generateSubChartWave(title, selectedTimeRange);
+      paths[title] = generateSubChartWindow(title, windowStart, widthPercent);
     });
     return paths;
-  }, [selectedTimeRange]);
+  }, [windowStart, windowEnd, selectedTimeRange]);
 
   const handleTimeRangeChange = (value: string) => {
     setSelectedTimeRange(value);
     // Set spinbox to the new max value
     const newMax = timeRangeToMinutes(value);
     setSpinboxValue(newMax);
+    // Reset window to show latest data
+    const width = calculateSelectorWidth(value);
+    setWindowStart(100 - width);
+    setWindowEnd(100);
+    // Clear cache to regenerate waveforms
+    clearWaveformCache();
+  };
+
+  const handleWindowChange = (start: number, end: number) => {
+    setWindowStart(start);
+    setWindowEnd(end);
   };
 
   return (
@@ -63,6 +86,12 @@ const App: React.FC = () => {
               minValue="0"
               pathData={mvexpPath}
               viewBoxHeight={44.523}
+              overlay={
+                <TimeWindowSelector
+                  selectorWidthPercent={selectorWidthPercent}
+                  onWindowChange={handleWindowChange}
+                />
+              }
             />
           </div>
 
