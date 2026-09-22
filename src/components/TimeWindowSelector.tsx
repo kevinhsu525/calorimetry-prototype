@@ -12,7 +12,6 @@ const TimeWindowSelector: React.FC<TimeWindowSelectorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [startPercent, setStartPercent] = useState<number>(100 - selectorWidthPercent);
   const isDragging = useRef(false);
-  const dragType = useRef<'move' | 'left' | 'right'>('move');
   const initialMouseX = useRef(0);
   const initialStartPercent = useRef(0);
 
@@ -26,24 +25,12 @@ const TimeWindowSelector: React.FC<TimeWindowSelectorProps> = ({
     const deltaX = clientX - initialMouseX.current;
     const deltaPercent = (deltaX / containerWidth) * 100;
 
-    let newStartPercent: number;
-    let newEndPercent: number;
-
-    if (dragType.current === 'move') {
-      newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, 100 - selectorWidthPercent);
-      newEndPercent = newStartPercent + selectorWidthPercent;
-    } else if (dragType.current === 'left') {
-      newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, startPercent + selectorWidthPercent - 5);
-      newEndPercent = startPercent + selectorWidthPercent;
-    } else {
-      // right
-      newEndPercent = clamp(initialStartPercent.current + selectorWidthPercent + deltaPercent, startPercent + 5, 100);
-      newStartPercent = startPercent;
-    }
+    const newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, 100 - selectorWidthPercent);
+    const newEndPercent = newStartPercent + selectorWidthPercent;
 
     setStartPercent(newStartPercent);
     onWindowChange?.(newStartPercent, newEndPercent);
-  }, [selectorWidthPercent, onWindowChange, startPercent]);
+  }, [selectorWidthPercent, onWindowChange]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -65,15 +52,14 @@ const TimeWindowSelector: React.FC<TimeWindowSelectorProps> = ({
     };
   }, [updatePosition]);
 
-  const handleMouseDown = (e: React.MouseEvent, type: 'move' | 'left' | 'right') => {
+  const handleMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;
-    dragType.current = type;
     initialMouseX.current = e.clientX;
     initialStartPercent.current = startPercent;
     e.preventDefault();
   };
 
-  // When selector width changes, adjust start position to keep right edge aligned
+  // When selector width changes, adjust start position
   useEffect(() => {
     setStartPercent(prev => {
       const newStart = 100 - selectorWidthPercent;
@@ -96,25 +82,8 @@ const TimeWindowSelector: React.FC<TimeWindowSelectorProps> = ({
           borderLeft: '2px solid #b39cf1',
           borderRight: '2px solid #b39cf1',
         }}
-        onMouseDown={(e) => handleMouseDown(e, 'move')}
-      >
-        {/* Left handle */}
-        <div
-          className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-6 bg-[#b39cf1] rounded-full pointer-events-auto cursor-ew-resize"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleMouseDown(e, 'left');
-          }}
-        />
-        {/* Right handle */}
-        <div
-          className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-6 bg-[#b39cf1] rounded-full pointer-events-auto cursor-ew-resize"
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleMouseDown(e, 'right');
-          }}
-        />
-      </div>
+        onMouseDown={handleMouseDown}
+      />
     </div>
   );
 };
