@@ -1,21 +1,34 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const Spinbox: React.FC = () => {
-  const [value, setValue] = useState<string>('1 h');
-  const timeOptions = ['30 min', '1 h', '2 h', '3 h', '6 h'];
+interface SpinboxProps {
+  value: number; // in minutes
+  maxValue: number; // in minutes
+  onChange: (value: number) => void;
+}
 
+const Spinbox: React.FC<SpinboxProps> = ({ value, maxValue, onChange }) => {
   const handlePrev = () => {
-    const currentIndex = timeOptions.indexOf(value);
-    if (currentIndex > 0) {
-      setValue(timeOptions[currentIndex - 1]);
+    if (value > 1) {
+      onChange(value - 1);
     }
   };
 
   const handleNext = () => {
-    const currentIndex = timeOptions.indexOf(value);
-    if (currentIndex < timeOptions.length - 1) {
-      setValue(timeOptions[currentIndex + 1]);
+    if (value < maxValue) {
+      onChange(value + 1);
     }
+  };
+
+  const formatValue = (minutes: number): string => {
+    if (minutes < 60) {
+      return `${minutes} min`;
+    }
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (m === 0) {
+      return `${h} h`;
+    }
+    return `${h} h ${m} min`;
   };
 
   return (
@@ -24,8 +37,9 @@ const Spinbox: React.FC = () => {
         {/* Left arrow */}
         <button 
           onClick={handlePrev}
-          className="flex items-center justify-center h-[66px] w-[60px] bg-[#373b3d] hover:bg-[#4a4e50] transition-colors cursor-pointer"
-          aria-label="Previous time range"
+          disabled={value <= 1}
+          className="flex items-center justify-center h-[66px] w-[60px] bg-[#373b3d] hover:bg-[#4a4e50] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Decrease time range"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M15 18L9 12L15 6" stroke="#f9f9fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -35,15 +49,16 @@ const Spinbox: React.FC = () => {
         {/* Value display */}
         <div className="flex-1 flex items-center justify-center h-[66px] border-x border-[#525457] px-2">
           <span className="text-[#fafbfd] text-2xl text-center whitespace-nowrap">
-            {value}
+            {formatValue(value)}
           </span>
         </div>
 
         {/* Right arrow */}
         <button 
           onClick={handleNext}
-          className="flex items-center justify-center h-[66px] w-[60px] bg-[#373b3d] hover:bg-[#4a4e50] transition-colors cursor-pointer"
-          aria-label="Next time range"
+          disabled={value >= maxValue}
+          className="flex items-center justify-center h-[66px] w-[60px] bg-[#373b3d] hover:bg-[#4a4e50] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Increase time range"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M9 18L15 12L9 6" stroke="#f9f9fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

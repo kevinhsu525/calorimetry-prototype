@@ -1,50 +1,44 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import Header from './components/Header';
 import TimeRangeButtons from './components/TimeRangeButtons';
 import Chart from './components/Chart';
 import Readings from './components/Readings';
 import Spinbox from './components/Spinbox';
+import { timeRangeToMinutes, generateMVexpWave, generateSubChartWave } from './utils/waveform';
 
-const chartConfigs = [
-  {
-    title: 'VCO2',
-    unit: 'ml/min',
-    maxValue: '200',
-    midValue: '100',
-    minValue: '0',
-    pathData: 'M0 30 C 15 5, 25 30, 35 10 C 45 0, 55 34, 65 5 C 75 15, 85 25, 100 20',
-    viewBoxHeight: 34,
-  },
-  {
-    title: 'VO2',
-    unit: 'ml/min',
-    maxValue: '200',
-    midValue: '100',
-    minValue: '0',
-    pathData: 'M0 40 C 15 10, 25 45, 35 15 C 45 0, 55 48, 65 10 C 75 20, 85 35, 100 25',
-    viewBoxHeight: 48,
-  },
-  {
-    title: 'RQ',
-    unit: '',
-    maxValue: '1.5',
-    midValue: '1.0',
-    minValue: '0.5',
-    pathData: 'M0 35 C 15 10, 25 40, 35 15 C 45 5, 55 45, 65 10 C 75 25, 85 35, 100 20',
-    viewBoxHeight: 48,
-  },
-  {
-    title: 'EE',
-    unit: 'kcal/day',
-    maxValue: '1500',
-    midValue: '750',
-    minValue: '0',
-    pathData: 'M0 28 C 15 5, 25 30, 35 10 C 45 0, 55 33, 65 8 C 75 15, 85 25, 100 18',
-    viewBoxHeight: 33,
-  },
-];
+const chartTitles = ['VCO2', 'VO2', 'RQ', 'EE'] as const;
+
+const chartMeta: Record<string, { unit: string; maxValue: string; midValue: string; minValue: string; viewBoxHeight: number }> = {
+  VCO2: { unit: 'ml/min', maxValue: '200', midValue: '100', minValue: '0', viewBoxHeight: 34 },
+  VO2: { unit: 'ml/min', maxValue: '200', midValue: '100', minValue: '0', viewBoxHeight: 48 },
+  RQ: { unit: '', maxValue: '1.5', midValue: '1.0', minValue: '0.5', viewBoxHeight: 48 },
+  EE: { unit: 'kcal/day', maxValue: '1500', midValue: '750', minValue: '0', viewBoxHeight: 33 },
+};
 
 const App: React.FC = () => {
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1 h');
+  const [spinboxValue, setSpinboxValue] = useState<number>(60);
+
+  const maxMinutes = timeRangeToMinutes(selectedTimeRange);
+
+  // Generate waveforms based on selected time range
+  const mvexpPath = useMemo(() => generateMVexpWave(selectedTimeRange), [selectedTimeRange]);
+
+  const subChartPaths = useMemo(() => {
+    const paths: Record<string, string> = {};
+    chartTitles.forEach((title) => {
+      paths[title] = generateSubChartWave(title, selectedTimeRange);
+    });
+    return paths;
+  }, [selectedTimeRange]);
+
+  const handleTimeRangeChange = (value: string) => {
+    setSelectedTimeRange(value);
+    // Set spinbox to the new max value
+    const newMax = timeRangeToMinutes(value);
+    setSpinboxValue(newMax);
+  };
+
   return (
     <div 
       className="bg-[#202324] border border-[#373b3d] flex flex-col"
@@ -59,7 +53,7 @@ const App: React.FC = () => {
         <div className="flex flex-col gap-3 w-[571px] shrink-0" style={{ height: '859px' }}>
           {/* Primary Time Range + MVexp Chart Container */}
           <div className="bg-[#141415] rounded p-3 flex flex-col gap-2 shrink-0">
-            <TimeRangeButtons />
+            <TimeRangeButtons value={selectedTimeRange} onChange={handleTimeRangeChange} />
 
             <Chart
               title="MVexp"
@@ -67,26 +61,29 @@ const App: React.FC = () => {
               maxValue="6"
               midValue="3"
               minValue="0"
-              pathData="M0 22 C 8 8, 17 36, 25 22 C 33 8, 42 36, 50 22 C 58 8, 67 36, 75 22 C 83 8, 92 36, 100 22"
+              pathData={mvexpPath}
               viewBoxHeight={44.523}
             />
           </div>
 
           {/* Disclosure Area */}
           <div className="bg-[#141415] border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-hidden">
-              {chartConfigs.map((config) => (
-                <Chart
-                  key={config.title}
-                  compact
-                  title={config.title}
-                  unit={config.unit}
-                  maxValue={config.maxValue}
-                  midValue={config.midValue}
-                  minValue={config.minValue}
-                  pathData={config.pathData}
-                  viewBoxHeight={config.viewBoxHeight}
-                />
-              ))}
+              {chartTitles.map((title) => {
+                const meta = chartMeta[title];
+                return (
+                  <Chart
+                    key={title}
+                    compact
+                    title={title}
+                    unit={meta.unit}
+                    maxValue={meta.maxValue}
+                    midValue={meta.midValue}
+                    minValue={meta.minValue}
+                    pathData={subChartPaths[title]}
+                    viewBoxHeight={meta.viewBoxHeight}
+                  />
+                );
+              })}
 
               {/* Time Range Picker Area */}
               <div className="flex flex-col gap-2 pl-[104px] shrink-0">
@@ -109,7 +106,7 @@ const App: React.FC = () => {
               <div className="flex-1 min-h-0" />
 
               {/* Spinbox */}
-              <Spinbox />
+              <Spinbox value={spinboxValue} maxValue={maxMinutes} onChange={setSpinboxValue} />
           </div>
         </div>
 
