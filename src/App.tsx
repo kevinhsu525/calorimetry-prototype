@@ -90,7 +90,7 @@ const App: React.FC = () => {
               ))}
 
               {/* Time Range Picker Area */}
-              <div className="flex flex-col gap-2 pl-[104px]">
+              <div className="flex flex-col gap-2 pl-[104px] shrink-0">
                 <div className="flex justify-between text-[#babdc0] text-sm">
                   <span>15:30</span>
                   <span>21:30</span>
@@ -105,6 +105,9 @@ const App: React.FC = () => {
                   <div className="absolute right-[30%] top-1/2 translate-x-1/2 -translate-y-1/2 w-3 h-5 bg-[#b39cf1] rounded-sm" />
                 </div>
               </div>
+
+              {/* Flex spacer to push Spinbox to bottom */}
+              <div className="flex-1 min-h-0" />
 
               {/* Spinbox */}
               <Spinbox />
