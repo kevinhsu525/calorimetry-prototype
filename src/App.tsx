@@ -78,6 +78,7 @@ const App: React.FC = () => {
               {chartConfigs.map((config) => (
                 <Chart
                   key={config.title}
+                  compact
                   title={config.title}
                   unit={config.unit}
                   maxValue={config.maxValue}
