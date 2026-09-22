@@ -25,7 +25,7 @@ const Chart: React.FC<ChartProps> = ({
   return (
     <div className="flex gap-3 items-start w-full">
       {/* Title block */}
-      <div className="flex flex-col gap-1 w-[90px] shrink-0 text-center pt-1">
+      <div className="flex flex-col gap-1 w-[90px] shrink-0 text-left pt-1">
         <span className="text-[#f9f9fa] text-[22px] leading-7">{title}</span>
         <span className="text-[#babdc0] text-lg leading-6">{unit}</span>
       </div>
