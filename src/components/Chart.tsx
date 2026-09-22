@@ -11,6 +11,30 @@ interface ChartProps {
   showUnit?: boolean;
   compact?: boolean;
   overlay?: ReactNode;
+  timeLabels?: string[];
+  showTimeLabels?: boolean;
+}
+
+function formatTime(date: Date): string {
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function generateTimeLabels(windowStartPercent: number, windowEndPercent: number): string[] {
+  // Calculate times based on 24h window
+  const now = new Date();
+  const totalMs = 24 * 60 * 60 * 1000; // 24 hours in ms
+  
+  const startTime = new Date(now.getTime() - totalMs + (windowStartPercent / 100) * totalMs);
+  const endTime = new Date(now.getTime() - totalMs + (windowEndPercent / 100) * totalMs);
+  const midTime = new Date((startTime.getTime() + endTime.getTime()) / 2);
+  
+  const startStr = formatTime(startTime);
+  const midStr = formatTime(midTime);
+  const endStr = formatTime(endTime);
+  
+  return [startStr, midStr, endStr];
 }
 
 const Chart: React.FC<ChartProps> = ({ 
@@ -22,8 +46,23 @@ const Chart: React.FC<ChartProps> = ({
   pathData, 
   viewBoxHeight,
   compact = false,
-  overlay
+  overlay,
+  timeLabels,
+  showTimeLabels = false
 }) => {
+  // Determine if we should show time labels
+  const shouldShowLabels = !compact || showTimeLabels;
+  
+  // Generate labels
+  let labels: string[];
+  if (timeLabels && timeLabels.length >= 3) {
+    labels = [timeLabels[0], '', timeLabels[1], '', timeLabels[2]];
+  } else if (timeLabels && timeLabels.length === 2) {
+    labels = [timeLabels[0], '', '', '', timeLabels[1]];
+  } else {
+    labels = ['15:30', '21:30', '03 Mar', '09:30', '15:30'];
+  }
+
   return (
     <div className="flex gap-3 items-start w-full">
       {/* Title block */}
@@ -82,13 +121,11 @@ const Chart: React.FC<ChartProps> = ({
           </div>
         </div>
 
-        {!compact && (
+        {shouldShowLabels && (
           <div className="flex justify-between pl-6 text-[#babdc0] text-sm">
-            <span className="leading-5">15:30</span>
-            <span className="leading-5">21:30</span>
-            <span className="leading-5">03 Mar</span>
-            <span className="leading-5">09:30</span>
-            <span className="leading-5">15:30</span>
+            {labels.map((label, index) => (
+              <span key={index} className="leading-5">{label}</span>
+            ))}
           </div>
         )}
       </div>
@@ -96,4 +133,5 @@ const Chart: React.FC<ChartProps> = ({
   );
 };
 
+export { generateTimeLabels };
 export default Chart;

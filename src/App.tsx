@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import Header from './components/Header';
 import TimeRangeButtons from './components/TimeRangeButtons';
-import Chart from './components/Chart';
+import Chart, { generateTimeLabels } from './components/Chart';
 import Readings from './components/Readings';
 import Spinbox from './components/Spinbox';
 import TimeWindowSelector from './components/TimeWindowSelector';
@@ -43,6 +43,11 @@ const App: React.FC = () => {
     });
     return paths;
   }, [windowStart, windowEnd, selectedTimeRange]);
+
+  // Generate dynamic time labels for sub-charts
+  const subChartTimeLabels = useMemo(() => {
+    return generateTimeLabels(windowStart, windowEnd);
+  }, [windowStart, windowEnd]);
 
   const handleTimeRangeChange = (value: string) => {
     setSelectedTimeRange(value);
@@ -110,6 +115,8 @@ const App: React.FC = () => {
                     minValue={meta.minValue}
                     pathData={subChartPaths[title]}
                     viewBoxHeight={meta.viewBoxHeight}
+                    showTimeLabels
+                    timeLabels={subChartTimeLabels}
                   />
                 );
               })}
