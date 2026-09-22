@@ -67,7 +67,7 @@ const App: React.FC = () => {
               maxValue="6"
               midValue="3"
               minValue="0"
-              pathData="M0 35 C 12 5, 25 40, 38 15 C 50 0, 62 44, 75 10 C 87 5, 95 35, 100 25"
+              pathData="M0 22 C 8 8, 17 36, 25 22 C 33 8, 42 36, 50 22 C 58 8, 67 36, 75 22 C 83 8, 92 36, 100 22"
               viewBoxHeight={44.523}
             />
           </div>
