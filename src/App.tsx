@@ -12,7 +12,7 @@ const chartConfigs = [
     maxValue: '200',
     midValue: '100',
     minValue: '0',
-    pathData: 'M0 17C20 10 40 24 60 10C80 0 100 17 100 17',
+    pathData: 'M0 30 C 15 5, 25 30, 35 10 C 45 0, 55 34, 65 5 C 75 15, 85 25, 100 20',
     viewBoxHeight: 34,
   },
   {
@@ -21,7 +21,7 @@ const chartConfigs = [
     maxValue: '200',
     midValue: '100',
     minValue: '0',
-    pathData: 'M0 24C20 17 40 31 60 17C80 7 100 24 100 24',
+    pathData: 'M0 40 C 15 10, 25 45, 35 15 C 45 0, 55 48, 65 10 C 75 20, 85 35, 100 25',
     viewBoxHeight: 48,
   },
   {
@@ -30,7 +30,7 @@ const chartConfigs = [
     maxValue: '1.5',
     midValue: '1.0',
     minValue: '0.5',
-    pathData: 'M0 24C20 17 40 31 60 17C80 7 100 24 100 24',
+    pathData: 'M0 35 C 15 10, 25 40, 35 15 C 45 5, 55 45, 65 10 C 75 25, 85 35, 100 20',
     viewBoxHeight: 48,
   },
   {
@@ -39,7 +39,7 @@ const chartConfigs = [
     maxValue: '1500',
     midValue: '750',
     minValue: '0',
-    pathData: 'M0 16.5C20 9.5 40 23.5 60 9.5C80 0 100 16.5 100 16.5',
+    pathData: 'M0 28 C 15 5, 25 30, 35 10 C 45 0, 55 33, 65 8 C 75 15, 85 25, 100 18',
     viewBoxHeight: 33,
   },
 ];
@@ -67,7 +67,7 @@ const App: React.FC = () => {
               maxValue="6"
               midValue="3"
               minValue="0"
-              pathData="M0 22.262C20 15.087 40 29.437 60 15.087C80 0.737 100 22.262 100 22.262"
+              pathData="M0 35 C 12 5, 25 40, 38 15 C 50 0, 62 44, 75 10 C 87 5, 95 35, 100 25"
               viewBoxHeight={44.523}
             />
           </div>
