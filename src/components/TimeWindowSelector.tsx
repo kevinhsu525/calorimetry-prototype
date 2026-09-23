@@ -84,6 +84,25 @@ const TimeWindowSelector: React.FC<TimeWindowSelectorProps> = ({
         }}
         onMouseDown={handleMouseDown}
       />
+
+      {/* Selection Fan - connects selection to lower chart area */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          top: '100%',
+          left: 0,
+          width: '100%',
+          height: '16px',
+          zIndex: 3,
+        }}
+      >
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <polygon
+            points={`${startPercent},0 ${startPercent + selectorWidthPercent},0 100,100 0,100`}
+            fill="rgba(179, 156, 241, 0.35)"
+          />
+        </svg>
+      </div>
     </div>
   );
 };
