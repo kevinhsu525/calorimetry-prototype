@@ -3,6 +3,8 @@ import Divider from './Divider';
 
 interface ReadingsProps {
   spinboxValue: number;
+  disclosureStart?: number;
+  disclosureEnd?: number;
 }
 
 interface ReadingItem {
@@ -38,7 +40,7 @@ const ValuePair: React.FC<ValuePairProps> = ({ label, value, unit }) => (
   </div>
 );
 
-const Readings: React.FC<ReadingsProps> = ({ spinboxValue }) => {
+const Readings: React.FC<ReadingsProps> = ({ spinboxValue, disclosureStart, disclosureEnd }) => {
   const [displayValues, setDisplayValues] = useState<string[]>(
     baseReadings.map((item) => {
       const prefix = item.prefix || '';
@@ -55,7 +57,7 @@ const Readings: React.FC<ReadingsProps> = ({ spinboxValue }) => {
       return prefix + newValue.toFixed(item.decimals);
     });
     setDisplayValues(newValues);
-  }, [spinboxValue]);
+  }, [spinboxValue, disclosureStart, disclosureEnd]);
 
   return (
     <div className="flex flex-col gap-[60px] w-full">

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Header from './components/Header';
 import TimeRangeButtons from './components/TimeRangeButtons';
 import Chart from './components/Chart';
@@ -6,6 +6,7 @@ import Readings from './components/Readings';
 import Spinbox from './components/Spinbox';
 import TimeWindowSelector from './components/TimeWindowSelector';
 import DynamicTimeAxis from './components/DynamicTimeAxis';
+import DisclosureSelector from './components/DisclosureSelector';
 import {
   timeRangeToMinutes,
   calculateSelectorWidth,
@@ -28,9 +29,29 @@ const App: React.FC = () => {
   const [spinboxValue, setSpinboxValue] = useState<number>(60);
   const [windowStart, setWindowStart] = useState<number>(0);
   const [windowEnd, setWindowEnd] = useState<number>(100);
+  const [disclosureStart, setDisclosureStart] = useState<number>(100 - (60 / (24 * 60)) * 100);
+  const [disclosureEnd, setDisclosureEnd] = useState<number>(100);
+  const disclosureEndRef = useRef(100);
 
   const maxMinutes = timeRangeToMinutes(selectedTimeRange);
   const selectorWidthPercent = calculateSelectorWidth(selectedTimeRange);
+
+  // Disclosure selector width based on spinbox value (minutes / 24h)
+  const disclosureWidthPercent = (spinboxValue / (24 * 60)) * 100;
+
+  // When spinbox value changes, update disclosure selector position
+  useEffect(() => {
+    const width = (spinboxValue / (24 * 60)) * 100;
+    const end = disclosureEndRef.current;
+    const newStart = end - width;
+    if (newStart < 0) {
+      setDisclosureStart(0);
+      setDisclosureEnd(width);
+      disclosureEndRef.current = width;
+    } else {
+      setDisclosureStart(newStart);
+    }
+  }, [spinboxValue]);
 
   // Generate 24h MVexp wave
   const mvexpPath = useMemo(() => generateMVexpWave(selectedTimeRange), [selectedTimeRange]);
@@ -61,6 +82,12 @@ const App: React.FC = () => {
   const handleWindowChange = (start: number, end: number) => {
     setWindowStart(start);
     setWindowEnd(end);
+  };
+
+  const handleDisclosureWindowChange = (start: number, end: number) => {
+    setDisclosureStart(start);
+    setDisclosureEnd(end);
+    disclosureEndRef.current = end;
   };
 
   return (
@@ -97,23 +124,31 @@ const App: React.FC = () => {
           </div>
 
           {/* Disclosure Area */}
-          <div className="bg-[#141415] border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-hidden">
-              {chartTitles.map((title) => {
-                const meta = chartMeta[title];
-                return (
-                  <Chart
-                    key={title}
-                    compact
-                    title={title}
-                    unit={meta.unit}
-                    maxValue={meta.maxValue}
-                    midValue={meta.midValue}
-                    minValue={meta.minValue}
-                    pathData={subChartPaths[title]}
-                    viewBoxHeight={meta.viewBoxHeight}
-                  />
-                );
-              })}
+          <div className="bg-[#141415] border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-hidden relative">
+              {/* Charts with Disclosure Selector */}
+              <div className="relative flex-1">
+                <DisclosureSelector
+                  startPercent={disclosureStart}
+                  selectorWidthPercent={disclosureWidthPercent}
+                  onWindowChange={handleDisclosureWindowChange}
+                />
+                {chartTitles.map((title) => {
+                  const meta = chartMeta[title];
+                  return (
+                    <Chart
+                      key={title}
+                      compact
+                      title={title}
+                      unit={meta.unit}
+                      maxValue={meta.maxValue}
+                      midValue={meta.midValue}
+                      minValue={meta.minValue}
+                      pathData={subChartPaths[title]}
+                      viewBoxHeight={meta.viewBoxHeight}
+                    />
+                  );
+                })}
+              </div>
 
               {/* Time Range Picker Area - Dynamic Time Axis */}
               <div className="flex flex-col gap-2 pl-[104px] shrink-0">
@@ -130,7 +165,7 @@ const App: React.FC = () => {
 
         {/* Right Panel - Readings */}
         <div className="w-[274px] bg-[#141415] rounded p-4 shrink-0 overflow-hidden" style={{ height: '859px' }}>
-          <Readings spinboxValue={spinboxValue} />
+          <Readings spinboxValue={spinboxValue} disclosureStart={disclosureStart} disclosureEnd={disclosureEnd} />
         </div>
       </div>
     </div>
