@@ -29,19 +29,26 @@ const App: React.FC = () => {
   const [spinboxValue, setSpinboxValue] = useState<number>(60);
   const [windowStart, setWindowStart] = useState<number>(0);
   const [windowEnd, setWindowEnd] = useState<number>(100);
-  const [disclosureStart, setDisclosureStart] = useState<number>(100 - (60 / (24 * 60)) * 100);
+  const [disclosureStart, setDisclosureStart] = useState<number>(0);
   const [disclosureEnd, setDisclosureEnd] = useState<number>(100);
   const disclosureEndRef = useRef(100);
 
   const maxMinutes = timeRangeToMinutes(selectedTimeRange);
   const selectorWidthPercent = calculateSelectorWidth(selectedTimeRange);
 
-  // Disclosure selector width based on spinbox value (minutes / 24h)
-  const disclosureWidthPercent = (spinboxValue / (24 * 60)) * 100;
+  // Chart area displays a window of the 24h data, calculate its duration in minutes
+  const chartWindowMinutes = ((windowEnd - windowStart) / 100) * 24 * 60;
 
-  // When spinbox value changes, update disclosure selector position
+  // Disclosure selector width: spinbox value relative to the chart window duration
+  const disclosureWidthPercent = chartWindowMinutes > 0
+    ? Math.min(100, (spinboxValue / chartWindowMinutes) * 100)
+    : 100;
+
+  // When spinbox or chart window changes, update disclosure selector position
   useEffect(() => {
-    const width = (spinboxValue / (24 * 60)) * 100;
+    const width = chartWindowMinutes > 0
+      ? Math.min(100, (spinboxValue / chartWindowMinutes) * 100)
+      : 100;
     const end = disclosureEndRef.current;
     const newStart = end - width;
     if (newStart < 0) {
@@ -51,7 +58,7 @@ const App: React.FC = () => {
     } else {
       setDisclosureStart(newStart);
     }
-  }, [spinboxValue]);
+  }, [spinboxValue, chartWindowMinutes]);
 
   // Generate 24h MVexp wave
   const mvexpPath = useMemo(() => generateMVexpWave(selectedTimeRange), [selectedTimeRange]);
