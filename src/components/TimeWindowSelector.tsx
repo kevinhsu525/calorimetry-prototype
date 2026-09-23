@@ -92,7 +92,7 @@ const TimeWindowSelector: React.FC<TimeWindowSelectorProps> = ({
           top: '100%',
           left: 0,
           width: '100%',
-          height: '16px',
+          height: '48px',
           zIndex: 3,
         }}
       >
