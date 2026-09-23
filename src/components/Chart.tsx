@@ -92,7 +92,7 @@ const Chart: React.FC<ChartProps> = ({
                 className="w-full"
                 preserveAspectRatio="none"
               >
-                <path d={pathData} stroke="#00FF00" strokeWidth="2" fill="none" vectorEffect="non-scaling-stroke" />
+                <path d={pathData} stroke="#00FF00" strokeWidth="2" fill="none" vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
 

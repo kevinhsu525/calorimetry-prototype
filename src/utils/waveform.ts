@@ -35,11 +35,11 @@ function generateBreathingWave(baseline: number, amplitude: number, points: numb
   };
 
   // Fixed spike positions and properties (relative to total points, 0-1)
-  // These create the distinct peaks seen in the reference image
+  // Wider width creates smoother, more rounded peaks without sharp breakpoints
   const spikes = [
-    { center: 0.28, height: 0.90, width: 0.012 },   // Left-mid spike
-    { center: 0.55, height: 1.50, width: 0.018 },   // Center spike (largest)
-    { center: 0.80, height: 1.15, width: 0.015 },  // Right spike
+    { center: 0.28, height: 0.80, width: 0.035 },   // Left-mid spike (wider, rounded)
+    { center: 0.55, height: 1.30, width: 0.045 },   // Center spike (largest, widest)
+    { center: 0.80, height: 1.00, width: 0.038 },   // Right spike (wider, rounded)
   ];
 
   for (let i = 0; i < points; i++) {
@@ -68,9 +68,9 @@ function generateBreathingWave(baseline: number, amplitude: number, points: numb
     data.push(Math.max(minVal, Math.min(maxVal, value)));
   }
 
-  // Light smoothing to reduce harsh noise while keeping detail
+  // Moderate smoothing for连贯波形 while keeping detail
   const smoothed: number[] = [];
-  const windowSize = 2;
+  const windowSize = 4;
   for (let i = 0; i < data.length; i++) {
     let sum = 0;
     let count = 0;
@@ -175,12 +175,12 @@ function getSubChart24hData(title: string): number[] {
 
     switch (title) {
       case 'VCO2':
-        baseline = 150;
-        amplitude = 60;
+        baseline = 140;
+        amplitude = 45;
         break;
       case 'VO2':
-        baseline = 180;
-        amplitude = 50;
+        baseline = 150;
+        amplitude = 40;
         break;
       case 'RQ':
         baseline = 1.0;
@@ -215,8 +215,8 @@ export function calculateSelectorWidth(selectedRange: string): number {
  */
 export function generateMVexpWave24h(): string {
   const data = getMVexp24hData();
-  // Tighter Y range to make waveform more visible (0.5 to 5.5 covers the data well)
-  return dataToSvgPath(data, 0.5, 5.5, 100, 44.523);
+  // Use full 0-6 range to prevent waveform clipping at top/bottom
+  return dataToSvgPath(data, 0, 6, 100, 44.523);
 }
 
 /**
