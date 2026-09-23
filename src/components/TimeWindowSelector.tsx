@@ -94,11 +94,12 @@ const TimeWindowSelector: React.FC<TimeWindowSelectorProps> = ({
           width: '100%',
           height: '48px',
           zIndex: 3,
+          overflow: 'visible',
         }}
       >
-        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ overflow: 'visible' }}>
           <polygon
-            points={`${startPercent},0 ${startPercent + selectorWidthPercent},0 100,100 0,100`}
+            points={`${startPercent},0 ${startPercent + selectorWidthPercent},0 102.88,100 -34.05,100`}
             fill="rgba(179, 156, 241, 0.35)"
           />
         </svg>
