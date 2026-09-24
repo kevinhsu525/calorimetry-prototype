@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 
 interface DisclosureSelectorProps {
   startPercent: number;
@@ -13,8 +13,11 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
+  const dragType = useRef<'move' | 'resize-left' | 'resize-right'>('move');
   const initialMouseX = useRef(0);
   const initialStartPercent = useRef(0);
+  const initialEndPercent = useRef(0);
+  const [activeEdge, setActiveEdge] = useState<'left' | 'right' | null>(null);
 
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
@@ -24,16 +27,28 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
     const containerWidth = rect.width;
     const deltaX = clientX - initialMouseX.current;
     const deltaPercent = (deltaX / containerWidth) * 100;
-    const newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, 100 - selectorWidthPercent);
-    const newEndPercent = newStartPercent + selectorWidthPercent;
-    onWindowChange?.(newStartPercent, newEndPercent);
+
+    if (dragType.current === 'move') {
+      const newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, 100 - selectorWidthPercent);
+      const newEndPercent = newStartPercent + selectorWidthPercent;
+      onWindowChange?.(newStartPercent, newEndPercent);
+    } else if (dragType.current === 'resize-left') {
+      const newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, initialEndPercent.current - 1);
+      onWindowChange?.(newStartPercent, initialEndPercent.current);
+    } else if (dragType.current === 'resize-right') {
+      const newEndPercent = clamp(initialEndPercent.current + deltaPercent, initialStartPercent.current + 1, 100);
+      onWindowChange?.(initialStartPercent.current, newEndPercent);
+    }
   }, [selectorWidthPercent, onWindowChange]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isDragging.current) updatePosition(e.clientX);
     };
-    const handleMouseUp = () => { isDragging.current = false; };
+    const handleMouseUp = () => { 
+      isDragging.current = false;
+      setActiveEdge(null);
+    };
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
     return () => {
@@ -42,10 +57,34 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
     };
   }, [updatePosition]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMoveMouseDown = (e: React.MouseEvent) => {
     isDragging.current = true;
+    dragType.current = 'move';
     initialMouseX.current = e.clientX;
     initialStartPercent.current = startPercent;
+    initialEndPercent.current = startPercent + selectorWidthPercent;
+    e.preventDefault();
+  };
+
+  const handleLeftResizeMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    dragType.current = 'resize-left';
+    initialMouseX.current = e.clientX;
+    initialStartPercent.current = startPercent;
+    initialEndPercent.current = startPercent + selectorWidthPercent;
+    setActiveEdge('left');
+    e.stopPropagation();
+    e.preventDefault();
+  };
+
+  const handleRightResizeMouseDown = (e: React.MouseEvent) => {
+    isDragging.current = true;
+    dragType.current = 'resize-right';
+    initialMouseX.current = e.clientX;
+    initialStartPercent.current = startPercent;
+    initialEndPercent.current = startPercent + selectorWidthPercent;
+    setActiveEdge('right');
+    e.stopPropagation();
     e.preventDefault();
   };
 
@@ -62,18 +101,20 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
           left: `${startPercent}%`,
           width: `${selectorWidthPercent}%`,
           backgroundColor: 'rgba(179, 156, 241, 0.25)',
-          borderLeft: '2px solid #b39cf1',
-          borderRight: '2px solid #b39cf1',
+          borderLeft: `2px solid ${activeEdge === 'left' ? '#ffffff' : '#b39cf1'}`,
+          borderRight: `2px solid ${activeEdge === 'right' ? '#ffffff' : '#b39cf1'}`,
         }}
-        onMouseDown={handleMouseDown}
+        onMouseDown={handleMoveMouseDown}
       >
         {/* Left handle */}
         <div 
-          className="absolute left-0 top-full -translate-x-1/2 w-3 h-3 bg-[#b39cf1] rounded-full"
+          className={`absolute left-0 top-full -translate-x-1/2 w-3 h-3 rounded-full cursor-ew-resize ${activeEdge === 'left' ? 'bg-white' : 'bg-[#b39cf1]'}`}
+          onMouseDown={handleLeftResizeMouseDown}
         />
         {/* Right handle */}
         <div 
-          className="absolute right-0 top-full translate-x-1/2 w-3 h-3 bg-[#b39cf1] rounded-full"
+          className={`absolute right-0 top-full translate-x-1/2 w-3 h-3 rounded-full cursor-ew-resize ${activeEdge === 'right' ? 'bg-white' : 'bg-[#b39cf1]'}`}
+          onMouseDown={handleRightResizeMouseDown}
         />
       </div>
     </div>

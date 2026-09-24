@@ -31,7 +31,9 @@ const App: React.FC = () => {
   const [windowEnd, setWindowEnd] = useState<number>(100);
   const [disclosureStart, setDisclosureStart] = useState<number>(0);
   const [disclosureEnd, setDisclosureEnd] = useState<number>(100);
+  const disclosureStartRef = useRef(0);
   const disclosureEndRef = useRef(100);
+  const isUpdatingFromSelectorRef = useRef(false);
 
   const maxMinutes = timeRangeToMinutes(selectedTimeRange);
   const selectorWidthPercent = calculateSelectorWidth(selectedTimeRange);
@@ -44,19 +46,24 @@ const App: React.FC = () => {
     ? Math.min(100, (spinboxValue / chartWindowMinutes) * 100)
     : 100;
 
-  // When spinbox or chart window changes, update disclosure selector position
+  // When spinbox or chart window changes, keep left edge fixed, adjust right edge
   useEffect(() => {
+    if (isUpdatingFromSelectorRef.current) {
+      isUpdatingFromSelectorRef.current = false;
+      return;
+    }
     const width = chartWindowMinutes > 0
       ? Math.min(100, (spinboxValue / chartWindowMinutes) * 100)
       : 100;
-    const end = disclosureEndRef.current;
-    const newStart = end - width;
-    if (newStart < 0) {
-      setDisclosureStart(0);
-      setDisclosureEnd(width);
-      disclosureEndRef.current = width;
+    const start = disclosureStartRef.current;
+    const newEnd = start + width;
+    if (newEnd > 100) {
+      // If right edge exceeds 100%, anchor to 100% and shift left edge leftward
+      setDisclosureStart(100 - width);
+      setDisclosureEnd(100);
+      disclosureStartRef.current = 100 - width;
     } else {
-      setDisclosureStart(newStart);
+      setDisclosureEnd(newEnd);
     }
   }, [spinboxValue, chartWindowMinutes]);
 
@@ -92,9 +99,22 @@ const App: React.FC = () => {
   };
 
   const handleDisclosureWindowChange = (start: number, end: number) => {
+    const newWidth = end - start;
+    const oldWidth = disclosureEnd - disclosureStart;
+
     setDisclosureStart(start);
     setDisclosureEnd(end);
+    disclosureStartRef.current = start;
     disclosureEndRef.current = end;
+
+    // Only update spinbox if width changed (resizing), not when just moving
+    if (Math.abs(newWidth - oldWidth) > 0.01 && chartWindowMinutes > 0) {
+      const newSpinboxValue = Math.max(0, Math.round((newWidth / 100) * chartWindowMinutes));
+      if (newSpinboxValue >= 0) {
+        isUpdatingFromSelectorRef.current = true;
+        setSpinboxValue(newSpinboxValue);
+      }
+    }
   };
 
   return (
