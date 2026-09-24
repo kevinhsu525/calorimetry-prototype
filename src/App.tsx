@@ -34,6 +34,7 @@ const App: React.FC = () => {
   const disclosureStartRef = useRef(0);
   const disclosureEndRef = useRef(100);
   const isUpdatingFromSelectorRef = useRef(false);
+  const [rightEdgeActive, setRightEdgeActive] = useState(false);
 
   const maxMinutes = timeRangeToMinutes(selectedTimeRange);
   const selectorWidthPercent = calculateSelectorWidth(selectedTimeRange);
@@ -91,6 +92,9 @@ const App: React.FC = () => {
     setWindowEnd(100);
     // Clear cache to regenerate waveforms
     clearWaveformCache();
+    // Trigger right edge highlight
+    setRightEdgeActive(true);
+    setTimeout(() => setRightEdgeActive(false), 300);
   };
 
   const handleWindowChange = (start: number, end: number) => {
@@ -158,6 +162,7 @@ const App: React.FC = () => {
                   startPercent={disclosureStart}
                   selectorWidthPercent={disclosureWidthPercent}
                   onWindowChange={handleDisclosureWindowChange}
+                  rightEdgeActive={rightEdgeActive}
                 />
                 {chartTitles.map((title) => {
                   const meta = chartMeta[title];
@@ -186,7 +191,15 @@ const App: React.FC = () => {
               <div className="flex-1 min-h-0" />
 
               {/* Spinbox */}
-              <Spinbox value={spinboxValue} maxValue={maxMinutes} onChange={setSpinboxValue} />
+              <Spinbox 
+                value={spinboxValue} 
+                maxValue={maxMinutes} 
+                onChange={(val) => {
+                  setSpinboxValue(val);
+                  setRightEdgeActive(true);
+                  setTimeout(() => setRightEdgeActive(false), 300);
+                }} 
+              />
           </div>
         </div>
 

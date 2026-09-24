@@ -4,12 +4,14 @@ interface DisclosureSelectorProps {
   startPercent: number;
   selectorWidthPercent: number;
   onWindowChange?: (startPercent: number, endPercent: number) => void;
+  rightEdgeActive?: boolean;
 }
 
 const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
   startPercent,
   selectorWidthPercent,
   onWindowChange,
+  rightEdgeActive,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -109,7 +111,7 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
           width: `${selectorWidthPercent}%`,
           backgroundColor: 'rgba(179, 156, 241, 0.25)',
           borderLeft: `2px solid ${activeEdge === 'left' ? '#ffffff' : '#b39cf1'}`,
-          borderRight: `2px solid ${activeEdge === 'right' ? '#ffffff' : '#b39cf1'}`,
+          borderRight: `2px solid ${activeEdge === 'right' || rightEdgeActive ? '#ffffff' : '#b39cf1'}`,
         }}
         onMouseDown={handleMoveMouseDown}
       >
@@ -120,7 +122,7 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
         />
         {/* Right handle */}
         <div 
-          className={`absolute right-0 top-full translate-x-1/2 w-3 h-3 rounded-full cursor-ew-resize ${activeEdge === 'right' ? 'bg-white' : 'bg-[#b39cf1]'}`}
+          className={`absolute right-0 top-full translate-x-1/2 w-3 h-3 rounded-full cursor-ew-resize ${activeEdge === 'right' || rightEdgeActive ? 'bg-white' : 'bg-[#b39cf1]'}`}
           onMouseDown={handleRightResizeMouseDown}
         />
       </div>
