@@ -53,7 +53,7 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
     <div 
       ref={containerRef}
       className="absolute inset-y-0 z-[6] pointer-events-none"
-      style={{ left: '102px', right: '0px' }}
+      style={{ left: '130px', width: '413px' }}
     >
       {/* Selection overlay */}
       <div
