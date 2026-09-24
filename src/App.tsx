@@ -133,7 +133,7 @@ const App: React.FC = () => {
           {/* Disclosure Area */}
           <div className="bg-[#141415] border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-hidden relative">
               {/* Charts with Disclosure Selector */}
-              <div className="relative flex-1">
+              <div className="relative flex-1 flex flex-col gap-4">
                 <DisclosureSelector
                   startPercent={disclosureStart}
                   selectorWidthPercent={disclosureWidthPercent}
