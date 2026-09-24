@@ -17,7 +17,13 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
   const initialMouseX = useRef(0);
   const initialStartPercent = useRef(0);
   const initialEndPercent = useRef(0);
+  const selectorWidthPercentRef = useRef(selectorWidthPercent);
+  const onWindowChangeRef = useRef(onWindowChange);
   const [activeEdge, setActiveEdge] = useState<'left' | 'right' | null>(null);
+
+  // Keep refs in sync with latest props
+  selectorWidthPercentRef.current = selectorWidthPercent;
+  onWindowChangeRef.current = onWindowChange;
 
   const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
@@ -29,17 +35,18 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
     const deltaPercent = (deltaX / containerWidth) * 100;
 
     if (dragType.current === 'move') {
-      const newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, 100 - selectorWidthPercent);
-      const newEndPercent = newStartPercent + selectorWidthPercent;
-      onWindowChange?.(newStartPercent, newEndPercent);
+      const width = selectorWidthPercentRef.current;
+      const newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, 100 - width);
+      const newEndPercent = newStartPercent + width;
+      onWindowChangeRef.current?.(newStartPercent, newEndPercent);
     } else if (dragType.current === 'resize-left') {
       const newStartPercent = clamp(initialStartPercent.current + deltaPercent, 0, initialEndPercent.current - 1);
-      onWindowChange?.(newStartPercent, initialEndPercent.current);
+      onWindowChangeRef.current?.(newStartPercent, initialEndPercent.current);
     } else if (dragType.current === 'resize-right') {
       const newEndPercent = clamp(initialEndPercent.current + deltaPercent, initialStartPercent.current + 1, 100);
-      onWindowChange?.(initialStartPercent.current, newEndPercent);
+      onWindowChangeRef.current?.(initialStartPercent.current, newEndPercent);
     }
-  }, [selectorWidthPercent, onWindowChange]);
+  }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
