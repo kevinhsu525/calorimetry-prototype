@@ -134,7 +134,7 @@ const App: React.FC = () => {
         {/* Left Panel - Charts */}
         <div className="flex flex-col gap-3 w-[571px] shrink-0" style={{ height: '859px' }}>
           {/* Primary Time Range + MVexp Chart Container */}
-          <div className="bg-[#141415] rounded p-3 flex flex-col gap-2 shrink-0">
+          <div className="bg-[#141415] rounded-[1px] p-3 flex flex-col gap-2 shrink-0">
             <TimeRangeButtons value={selectedTimeRange} onChange={handleTimeRangeChange} />
 
             <Chart
@@ -155,7 +155,7 @@ const App: React.FC = () => {
           </div>
 
           {/* Disclosure Area */}
-          <div className="bg-[#141415] border-2 border-[#b39cf1] rounded p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-hidden relative">
+          <div className="bg-[#141415] border-2 border-[#b39cf1] rounded-[1px] p-3 flex flex-col gap-2 flex-1 min-h-0 overflow-hidden relative">
               {/* Charts with Disclosure Selector */}
               <div className="relative flex-1 flex flex-col gap-4">
                 <DisclosureSelector
@@ -204,7 +204,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Panel - Readings */}
-        <div className="w-[274px] bg-[#141415] rounded p-4 shrink-0 overflow-hidden" style={{ height: '859px' }}>
+        <div className="w-[274px] bg-[#141415] rounded-[1px] p-4 shrink-0 overflow-hidden" style={{ height: '859px' }}>
           <Readings spinboxValue={spinboxValue} disclosureStart={disclosureStart} disclosureEnd={disclosureEnd} />
         </div>
       </div>

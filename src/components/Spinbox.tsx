@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface SpinboxProps {
   value: number; // in minutes
@@ -7,6 +7,9 @@ interface SpinboxProps {
 }
 
 const Spinbox: React.FC<SpinboxProps> = ({ value, maxValue, onChange }) => {
+  const [leftPressed, setLeftPressed] = useState(false);
+  const [rightPressed, setRightPressed] = useState(false);
+
   const handlePrev = () => {
     if (value > 1) {
       onChange(value - 1);
@@ -33,16 +36,19 @@ const Spinbox: React.FC<SpinboxProps> = ({ value, maxValue, onChange }) => {
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      <div className="flex items-center border border-[#525457] rounded overflow-hidden shrink-0">
+      <div className="flex items-center border border-[#525457] rounded-[1px] overflow-hidden shrink-0">
         {/* Left arrow */}
         <button 
           onClick={handlePrev}
           disabled={value <= 1}
-          className="flex items-center justify-center h-[66px] w-[60px] bg-[#373b3d] hover:bg-[#4a4e50] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          onMouseDown={() => setLeftPressed(true)}
+          onMouseUp={() => setLeftPressed(false)}
+          onMouseLeave={() => setLeftPressed(false)}
+          className={`flex items-center justify-center h-[66px] w-[60px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${leftPressed ? 'bg-[#FAFBFD]' : 'bg-[#373b3d] hover:bg-[#4a4e50]'}`}
           aria-label="Decrease time range"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18L9 12L15 6" stroke="#f9f9fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M15 18L9 12L15 6" stroke={leftPressed ? "#141415" : "#f9f9fa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
 
@@ -57,11 +63,14 @@ const Spinbox: React.FC<SpinboxProps> = ({ value, maxValue, onChange }) => {
         <button 
           onClick={handleNext}
           disabled={value >= maxValue}
-          className="flex items-center justify-center h-[66px] w-[60px] bg-[#373b3d] hover:bg-[#4a4e50] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          onMouseDown={() => setRightPressed(true)}
+          onMouseUp={() => setRightPressed(false)}
+          onMouseLeave={() => setRightPressed(false)}
+          className={`flex items-center justify-center h-[66px] w-[60px] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${rightPressed ? 'bg-[#FAFBFD]' : 'bg-[#373b3d] hover:bg-[#4a4e50]'}`}
           aria-label="Increase time range"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18L15 12L9 6" stroke="#f9f9fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M9 18L15 12L9 6" stroke={rightPressed ? "#141415" : "#f9f9fa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
       </div>
