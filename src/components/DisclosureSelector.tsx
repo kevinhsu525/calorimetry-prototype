@@ -117,12 +117,12 @@ const DisclosureSelector: React.FC<DisclosureSelectorProps> = ({
       >
         {/* Left handle */}
         <div 
-          className={`absolute left-0 top-full -translate-x-1/2 w-3 h-3 rounded-full cursor-ew-resize ${activeEdge === 'left' ? 'bg-white' : 'bg-[#b39cf1]'}`}
+          className={`absolute left-0 top-full -translate-x-1/2 w-3 h-5 rounded-md cursor-ew-resize ${activeEdge === 'left' ? 'bg-white' : 'bg-[#b39cf1]'}`}
           onMouseDown={handleLeftResizeMouseDown}
         />
         {/* Right handle */}
         <div 
-          className={`absolute right-0 top-0 translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full cursor-ew-resize ${activeEdge === 'right' || rightEdgeActive ? 'bg-white' : 'bg-[#b39cf1]'}`}
+          className={`absolute right-0 top-0 translate-x-1/2 -translate-y-1/2 w-3 h-5 rounded-md cursor-ew-resize ${activeEdge === 'right' || rightEdgeActive ? 'bg-white' : 'bg-[#b39cf1]'}`}
           onMouseDown={handleRightResizeMouseDown}
         />
       </div>
