@@ -17,7 +17,7 @@ const TimeRangeButtons: React.FC<TimeRangeButtonsProps> = ({ value, onChange }) 
           className={`flex-1 h-[66px] flex items-center justify-center px-2 text-lg transition-colors cursor-pointer
             ${value === option 
               ? 'bg-[#61587f] text-[#FAFBFD] font-bold' 
-              : 'bg-[#373b3d] text-[#babdc0] hover:bg-[#4a4e50]'
+              : 'bg-[#373b3d] text-[#FAFBFD] hover:bg-[#4a4e50]'
             }
             ${index > 0 ? 'border-l border-[#525457]' : ''}`}
         >
