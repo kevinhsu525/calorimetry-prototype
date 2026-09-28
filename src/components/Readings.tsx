@@ -62,28 +62,28 @@ const Readings: React.FC<ReadingsProps> = ({ spinboxValue, disclosureStart, disc
   return (
     <div className="flex flex-col gap-[60px] w-full">
       {/* Avg. VCO2 / VCO2 CV */}
-      <div className="flex gap-2 items-center justify-center px-4 w-full">
+      <div className="flex gap-[56px] items-center justify-center px-4 w-full">
         <ValuePair label={baseReadings[0].label} value={displayValues[0]} unit={baseReadings[0].unit} />
         <Divider vertical />
         <ValuePair label={baseReadings[1].label} value={displayValues[1]} unit={baseReadings[1].unit} />
       </div>
 
       {/* Avg. VO2 / VO2 CV */}
-      <div className="flex gap-2 items-center justify-center px-4 w-full">
+      <div className="flex gap-[56px] items-center justify-center px-4 w-full">
         <ValuePair label={baseReadings[2].label} value={displayValues[2]} unit={baseReadings[2].unit} />
         <Divider vertical />
         <ValuePair label={baseReadings[3].label} value={displayValues[3]} unit={baseReadings[3].unit} />
       </div>
 
       {/* Avg. RQ / Avg. EE */}
-      <div className="flex gap-2 items-center justify-center px-4 w-full">
+      <div className="flex gap-[56px] items-center justify-center px-4 w-full">
         <ValuePair label={baseReadings[4].label} value={displayValues[4]} unit={baseReadings[4].unit} />
         <Divider vertical />
         <ValuePair label={baseReadings[5].label} value={displayValues[5]} unit={baseReadings[5].unit} />
       </div>
 
       {/* Avg. EE/m2 / Avg. EE/kg */}
-      <div className="flex gap-2 items-center justify-center px-4 w-full">
+      <div className="flex gap-[56px] items-center justify-center px-4 w-full">
         <ValuePair label={baseReadings[6].label} value={displayValues[6]} unit={baseReadings[6].unit} />
         <Divider vertical />
         <ValuePair label={baseReadings[7].label} value={displayValues[7]} unit={baseReadings[7].unit} />
@@ -92,7 +92,7 @@ const Readings: React.FC<ReadingsProps> = ({ spinboxValue, disclosureStart, disc
       <Divider />
 
       {/* BSA / Weight */}
-      <div className="flex gap-2 items-center justify-center px-4 w-full">
+      <div className="flex gap-[56px] items-center justify-center px-4 w-full">
         <ValuePair label="BSA" value="1.81" unit="m2" />
         <Divider vertical />
         <ValuePair label="Weight" value="70" unit="Kg" />
