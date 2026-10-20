@@ -9,10 +9,16 @@ const TOTAL_POINTS = TOTAL_HOURS * 60; // 1440 points for 24h (1 per minute)
 const VO2_METABOLIC_CYCLE = [145, 185, 200, 185, 155, 130, 120, 135, 165, 195, 185, 145];
 const VCO2_METABOLIC_CYCLE = [110, 140, 155, 145, 125, 105, 95, 100, 120, 145, 140, 110];
 
+interface StablePeriod {
+  start: number;
+  duration: number;
+}
+
 /**
  * Generate metabolic wave from cycle data points using linear interpolation
  * Creates smooth periodic waveform from discrete clinical data points
- * Includes a 20-minute stable period to simulate realistic metabolic patterns
+ * Includes multiple stable periods (20-40min each) to simulate realistic metabolic patterns
+ * Users need to interact to find the stable periods for caloric calculation
  *
  * Cycle: 12 data points = 20 minutes, repeated 72 times over 24h
  */
@@ -20,10 +26,14 @@ function generateMetabolicWave(cycleData: number[], totalPoints: number, baselin
   const result: number[] = [];
   const cycleLength = cycleData.length;
 
-  // Stable period: 20 minutes (20 points), at 60% into the data (~14.4 hours)
-  // Positioned to require user interaction to discover it
-  const stableStart = Math.floor(totalPoints * 0.6);
-  const stableEnd = stableStart + 20; // 20 minutes
+  // Define multiple stable periods (20-40 minutes each), distributed across 24h
+  // Users need to interact to find these stable windows for caloric calculation
+  const stablePeriods: StablePeriod[] = [
+    { start: Math.floor(totalPoints * 0.12), duration: 25 }, // ~2.9h, 25min
+    { start: Math.floor(totalPoints * 0.32), duration: 35 }, // ~7.7h, 35min
+    { start: Math.floor(totalPoints * 0.58), duration: 20 }, // ~13.9h, 20min
+    { start: Math.floor(totalPoints * 0.82), duration: 30 }, // ~19.7h, 30min
+  ];
 
   // Transition size: 10 points (10 minutes)
   const transitionSize = 10;
@@ -40,18 +50,36 @@ function generateMetabolicWave(cycleData: number[], totalPoints: number, baselin
     const fraction = position - Math.floor(position);
     const fluctuatingValue = cycleData[index] + fraction * (cycleData[nextIndex] - cycleData[index]);
 
-    if (i >= stableStart && i < stableEnd) {
+    // Check if current point is inside any stable period
+    let inStable = false;
+    let transitionT = 0;
+    let isTransition = false;
+
+    for (const period of stablePeriods) {
+      const periodEnd = period.start + period.duration;
+
+      if (i >= period.start && i < periodEnd) {
+        // Inside stable period
+        inStable = true;
+        break;
+      } else if (i >= period.start - transitionSize && i < period.start) {
+        // Transition into stable period (approaching from left)
+        isTransition = true;
+        transitionT = Math.max(transitionT, (i - (period.start - transitionSize)) / transitionSize);
+      } else if (i >= periodEnd && i < periodEnd + transitionSize) {
+        // Transition out of stable period (leaving to right)
+        isTransition = true;
+        transitionT = Math.max(transitionT, 1 - (i - periodEnd) / transitionSize);
+      }
+    }
+
+    if (inStable) {
       // Stable period: baseline + tiny noise (<0.5%) to simulate natural variation
       const tinyNoise = baseline * 0.005 * (Math.random() - 0.5);
       result.push(baseline + tinyNoise);
-    } else if (i >= stableStart - transitionSize && i < stableStart) {
-      // Transition into stable period (smooth ramp down)
-      const t = (i - (stableStart - transitionSize)) / transitionSize;
-      result.push(fluctuatingValue * (1 - t) + baseline * t);
-    } else if (i >= stableEnd && i < stableEnd + transitionSize) {
-      // Transition out of stable period (smooth ramp up)
-      const t = (i - stableEnd) / transitionSize;
-      result.push(baseline * (1 - t) + fluctuatingValue * t);
+    } else if (isTransition) {
+      // Transition period: smooth ramp between fluctuating and stable
+      result.push(fluctuatingValue * (1 - transitionT) + baseline * transitionT);
     } else {
       // Fluctuating period: use cycle data
       result.push(fluctuatingValue);
