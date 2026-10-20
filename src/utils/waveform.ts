@@ -5,8 +5,9 @@ const TOTAL_POINTS = TOTAL_HOURS * 60; // 1440 points for 24h (1 per minute)
 
 // Metabolic cycle data (20-minute cycle, 12 sample points)
 // Based on clinical data: VO2 base ~145, VCO2 base ~110
-const VO2_METABOLIC_CYCLE = [145, 158, 172, 165, 148, 136, 128, 138, 152, 165, 155, 145];
-const VCO2_METABOLIC_CYCLE = [110, 118, 128, 123, 112, 102, 96, 103, 115, 125, 118, 110];
+// Increased amplitude for more visible fluctuations in the UI
+const VO2_METABOLIC_CYCLE = [145, 185, 200, 185, 155, 130, 120, 135, 165, 195, 185, 145];
+const VCO2_METABOLIC_CYCLE = [110, 140, 155, 145, 125, 105, 95, 100, 120, 145, 140, 110];
 
 /**
  * Generate metabolic wave from cycle data points using linear interpolation
@@ -19,8 +20,9 @@ function generateMetabolicWave(cycleData: number[], totalPoints: number, baselin
   const result: number[] = [];
   const cycleLength = cycleData.length;
 
-  // Stable period: 20 minutes (20 points), at 40% into the data (~10 hours)
-  const stableStart = Math.floor(totalPoints * 0.4);
+  // Stable period: 20 minutes (20 points), at 60% into the data (~14.4 hours)
+  // Positioned to require user interaction to discover it
+  const stableStart = Math.floor(totalPoints * 0.6);
   const stableEnd = stableStart + 20; // 20 minutes
 
   // Transition size: 10 points (10 minutes)
