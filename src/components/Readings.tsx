@@ -16,12 +16,12 @@ interface ReadingItem {
 }
 
 const baseReadings: ReadingItem[] = [
-  { label: 'Avg. VCO2', baseValue: 152, unit: 'ml/min', decimals: 0 },
+  { label: 'Avg. VCO2', baseValue: 110, unit: 'ml/min', decimals: 0 },
   { label: 'VCO2 CV', baseValue: 1.5, unit: '%', decimals: 1 },
-  { label: 'Avg. VO2', baseValue: 115, unit: 'ml/min', decimals: 0 },
+  { label: 'Avg. VO2', baseValue: 145, unit: 'ml/min', decimals: 0 },
   { label: 'VO2 CV', baseValue: 1.4, unit: '%', decimals: 1 },
-  { label: 'Avg. RQ', baseValue: 1.3, unit: ' ', prefix: '> ', decimals: 1 },
-  { label: 'Avg. EE', baseValue: 873, unit: 'kcal/day', decimals: 0 },
+  { label: 'Avg. RQ', baseValue: 0.75, unit: ' ', prefix: '> ', decimals: 1 },
+  { label: 'Avg. EE', baseValue: 850, unit: 'kcal/day', decimals: 0 },
   { label: 'Avg. EE/m2', baseValue: 482, unit: 'kcal/day/m', decimals: 0 },
   { label: 'Avg. EE/kg', baseValue: 12, unit: 'kcal/day/kg', decimals: 0 },
 ];

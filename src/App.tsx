@@ -83,9 +83,23 @@ const App: React.FC = () => {
 
   const handleTimeRangeChange = (value: string) => {
     setSelectedTimeRange(value);
-    // Set spinbox to the new max value
     const newMax = timeRangeToMinutes(value);
-    setSpinboxValue(newMax);
+
+    // Disclosure selector becomes half width and centers on time range change
+    const halfValue = Math.round(newMax / 2);
+    const widthPercent = newMax > 0 ? (halfValue / newMax) * 100 : 100;
+    const start = (100 - widthPercent) / 2;
+    const end = start + widthPercent;
+
+    setDisclosureStart(start);
+    setDisclosureEnd(end);
+    disclosureStartRef.current = start;
+    disclosureEndRef.current = end;
+
+    // Mark as updating from selector to skip useEffect re-calculation
+    isUpdatingFromSelectorRef.current = true;
+
+    setSpinboxValue(halfValue);
     // Reset window to show latest data
     const width = calculateSelectorWidth(value);
     setWindowStart(100 - width);

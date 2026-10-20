@@ -3,6 +3,32 @@
 const TOTAL_HOURS = 24;
 const TOTAL_POINTS = TOTAL_HOURS * 60; // 1440 points for 24h (1 per minute)
 
+// Metabolic cycle data (20-minute cycle, 12 sample points)
+// Based on clinical data: VO2 base ~145, VCO2 base ~110
+const VO2_METABOLIC_CYCLE = [145, 158, 172, 165, 148, 136, 128, 138, 152, 165, 155, 145];
+const VCO2_METABOLIC_CYCLE = [110, 118, 128, 123, 112, 102, 96, 103, 115, 125, 118, 110];
+
+/**
+ * Generate metabolic wave from cycle data points using linear interpolation
+ * Creates smooth periodic waveform from discrete clinical data points
+ */
+function generateMetabolicWave(cycleData: number[], totalPoints: number): number[] {
+  const result: number[] = [];
+  const cycleLength = cycleData.length;
+
+  for (let i = 0; i < totalPoints; i++) {
+    const position = (i / totalPoints) * cycleLength;
+    const index = Math.floor(position) % cycleLength;
+    const nextIndex = (index + 1) % cycleLength;
+    const fraction = position - Math.floor(position);
+
+    const value = cycleData[index] + fraction * (cycleData[nextIndex] - cycleData[index]);
+    result.push(value);
+  }
+
+  return result;
+}
+
 /**
  * Convert time range string to minutes
  */
@@ -170,32 +196,39 @@ function getMVexp24hData(): number[] {
  */
 function getSubChart24hData(title: string): number[] {
   if (!cachedSubChartData[title]) {
-    let baseline: number;
-    let amplitude: number;
-
     switch (title) {
       case 'VCO2':
-        baseline = 140;
-        amplitude = 45;
+        cachedSubChartData[title] = generateMetabolicWave(VCO2_METABOLIC_CYCLE, TOTAL_POINTS);
         break;
       case 'VO2':
-        baseline = 150;
-        amplitude = 40;
+        cachedSubChartData[title] = generateMetabolicWave(VO2_METABOLIC_CYCLE, TOTAL_POINTS);
         break;
-      case 'RQ':
-        baseline = 1.0;
-        amplitude = 0.25;
+      case 'RQ': {
+        // RQ = VCO2 / VO2
+        const vco2Data = getSubChart24hData('VCO2');
+        const vo2Data = getSubChart24hData('VO2');
+        cachedSubChartData[title] = vco2Data.map((vco2, i) => {
+          const vo2 = vo2Data[i];
+          return vo2 > 0 ? vco2 / vo2 : 0.75;
+        });
         break;
-      case 'EE':
-        baseline = 1200;
-        amplitude = 300;
+      }
+      case 'EE': {
+        // EE = 3.941 * VO2 + 1.106 * VCO2, scaled to baseline 850
+        const vo2DataEE = getSubChart24hData('VO2');
+        const vco2DataEE = getSubChart24hData('VCO2');
+        const baseRawEE = 3.941 * 145 + 1.106 * 110; // 693.105
+        const scaleFactor = 850 / baseRawEE;
+        cachedSubChartData[title] = vo2DataEE.map((vo2, i) => {
+          const vco2 = vco2DataEE[i];
+          const rawEE = 3.941 * vo2 + 1.106 * vco2;
+          return rawEE * scaleFactor;
+        });
         break;
+      }
       default:
-        baseline = 50;
-        amplitude = 10;
+        cachedSubChartData[title] = generateWaveData(50, 10, TOTAL_POINTS);
     }
-
-    cachedSubChartData[title] = generateWaveData(baseline, amplitude, TOTAL_POINTS);
   }
   return cachedSubChartData[title];
 }
