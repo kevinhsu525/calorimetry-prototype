@@ -12,6 +12,8 @@ const VCO2_METABOLIC_CYCLE = [110, 118, 128, 123, 112, 102, 96, 103, 115, 125, 1
  * Generate metabolic wave from cycle data points using linear interpolation
  * Creates smooth periodic waveform from discrete clinical data points
  * Includes a 20-minute stable period to simulate realistic metabolic patterns
+ *
+ * Cycle: 12 data points = 20 minutes, repeated 72 times over 24h
  */
 function generateMetabolicWave(cycleData: number[], totalPoints: number, baseline: number): number[] {
   const result: number[] = [];
@@ -24,9 +26,13 @@ function generateMetabolicWave(cycleData: number[], totalPoints: number, baselin
   // Transition size: 10 points (10 minutes)
   const transitionSize = 10;
 
+  // 12 data points = 20 minutes (cycle repeats 72 times in 24h)
+  const cycleMinutes = 20;
+
   for (let i = 0; i < totalPoints; i++) {
-    // Calculate fluctuating value from cycle data
-    const position = (i / totalPoints) * cycleLength;
+    // Calculate which position in the 20-minute cycle this point belongs to
+    const minuteInCycle = i % cycleMinutes;
+    const position = (minuteInCycle / cycleMinutes) * cycleLength;
     const index = Math.floor(position) % cycleLength;
     const nextIndex = (index + 1) % cycleLength;
     const fraction = position - Math.floor(position);
