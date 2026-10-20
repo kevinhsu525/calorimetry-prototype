@@ -1,30 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Divider from './Divider';
+import { getWindowData } from '../utils/waveform';
 
 interface ReadingsProps {
   spinboxValue: number;
   disclosureStart?: number;
   disclosureEnd?: number;
 }
-
-interface ReadingItem {
-  label: string;
-  baseValue: number;
-  unit: string;
-  prefix?: string;
-  decimals: number;
-}
-
-const baseReadings: ReadingItem[] = [
-  { label: 'Avg. VCO2', baseValue: 110, unit: 'ml/min', decimals: 0 },
-  { label: 'VCO2 CV', baseValue: 1.5, unit: '%', decimals: 1 },
-  { label: 'Avg. VO2', baseValue: 145, unit: 'ml/min', decimals: 0 },
-  { label: 'VO2 CV', baseValue: 1.4, unit: '%', decimals: 1 },
-  { label: 'Avg. RQ', baseValue: 0.75, unit: ' ', prefix: '> ', decimals: 1 },
-  { label: 'Avg. EE', baseValue: 850, unit: 'kcal/day', decimals: 0 },
-  { label: 'Avg. EE/m2', baseValue: 482, unit: 'kcal/day/m', decimals: 0 },
-  { label: 'Avg. EE/kg', baseValue: 12, unit: 'kcal/day/kg', decimals: 0 },
-];
 
 const ValuePair: React.FC<{ label: string; value: string; unit: string }> = ({ label, value, unit }) => (
   <div className="flex flex-col gap-1 items-center text-center">
@@ -34,53 +16,115 @@ const ValuePair: React.FC<{ label: string; value: string; unit: string }> = ({ l
   </div>
 );
 
-const Readings: React.FC<ReadingsProps> = ({ spinboxValue, disclosureStart, disclosureEnd }) => {
-  const [displayValues, setDisplayValues] = useState<string[]>(
-    baseReadings.map((item) => {
-      const prefix = item.prefix || '';
-      return prefix + item.baseValue.toFixed(item.decimals);
-    })
-  );
+const Readings: React.FC<ReadingsProps> = ({ spinboxValue, disclosureStart = 0, disclosureEnd = 100 }) => {
+  const [displayValues, setDisplayValues] = useState<string[]>([]);
 
   useEffect(() => {
-    const newValues = baseReadings.map((item) => {
-      // Apply ±5 random fluctuation
-      const fluctuation = (Math.random() - 0.5) * 10;
-      const newValue = Math.max(0, item.baseValue + fluctuation);
-      const prefix = item.prefix || '';
-      return prefix + newValue.toFixed(item.decimals);
-    });
+    if (disclosureEnd <= disclosureStart) {
+      setDisplayValues([]);
+      return;
+    }
+
+    // Get actual window data from waveforms
+    const vco2Data = getWindowData('VCO2', disclosureStart, disclosureEnd);
+    const vo2Data = getWindowData('VO2', disclosureStart, disclosureEnd);
+    const rqData = getWindowData('RQ', disclosureStart, disclosureEnd);
+    const eeData = getWindowData('EE', disclosureStart, disclosureEnd);
+
+    if (vco2Data.length === 0 || vo2Data.length === 0) {
+      setDisplayValues([]);
+      return;
+    }
+
+    // Calculate averages
+    const avgVCO2 = vco2Data.reduce((a, b) => a + b, 0) / vco2Data.length;
+    const avgVO2 = vo2Data.reduce((a, b) => a + b, 0) / vo2Data.length;
+    const avgRQ = rqData.reduce((a, b) => a + b, 0) / rqData.length;
+    const avgEE = eeData.reduce((a, b) => a + b, 0) / eeData.length;
+
+    // Calculate CV (coefficient of variation)
+    const vco2Std = Math.sqrt(vco2Data.reduce((sum, val) => sum + Math.pow(val - avgVCO2, 2), 0) / vco2Data.length);
+    const vco2CV = (vco2Std / avgVCO2) * 100;
+
+    const vo2Std = Math.sqrt(vo2Data.reduce((sum, val) => sum + Math.pow(val - avgVO2, 2), 0) / vo2Data.length);
+    const vo2CV = (vo2Std / avgVO2) * 100;
+
+    // Update display values
+    const newValues = [
+      avgVCO2.toFixed(0),
+      vco2CV.toFixed(1),
+      avgVO2.toFixed(0),
+      vo2CV.toFixed(1),
+      avgRQ.toFixed(2),
+      avgEE.toFixed(0),
+      (avgEE / 1.81).toFixed(0), // EE/m2
+      (avgEE / 70).toFixed(0),   // EE/kg
+    ];
+
     setDisplayValues(newValues);
   }, [spinboxValue, disclosureStart, disclosureEnd]);
+
+  const labels = [
+    'Avg. VCO2',
+    'VCO2 CV',
+    'Avg. VO2',
+    'VO2 CV',
+    'Avg. RQ',
+    'Avg. EE',
+    'Avg. EE/m2',
+    'Avg. EE/kg',
+  ];
+
+  const units = [
+    'ml/min',
+    '%',
+    'ml/min',
+    '%',
+    ' ',
+    'kcal/day',
+    'kcal/day/m',
+    'kcal/day/kg',
+  ];
+
+  const prefixes = [
+    '',
+    '',
+    '',
+    '',
+    '> ',
+    '',
+    '',
+    '',
+  ];
 
   return (
     <div className="flex flex-col gap-[60px] w-full">
       {/* Avg. VCO2 / VCO2 CV */}
       <div className="grid grid-cols-[1fr_auto_1fr] w-full">
-        <ValuePair label={baseReadings[0].label} value={displayValues[0]} unit={baseReadings[0].unit} />
+        <ValuePair label={labels[0]} value={prefixes[0] + displayValues[0]} unit={units[0]} />
         <div className="w-px bg-[#373b3d] self-stretch" />
-        <ValuePair label={baseReadings[1].label} value={displayValues[1]} unit={baseReadings[1].unit} />
+        <ValuePair label={labels[1]} value={prefixes[1] + displayValues[1]} unit={units[1]} />
       </div>
 
       {/* Avg. VO2 / VO2 CV */}
       <div className="grid grid-cols-[1fr_auto_1fr] w-full">
-        <ValuePair label={baseReadings[2].label} value={displayValues[2]} unit={baseReadings[2].unit} />
+        <ValuePair label={labels[2]} value={prefixes[2] + displayValues[2]} unit={units[2]} />
         <div className="w-px bg-[#373b3d] self-stretch" />
-        <ValuePair label={baseReadings[3].label} value={displayValues[3]} unit={baseReadings[3].unit} />
+        <ValuePair label={labels[3]} value={prefixes[3] + displayValues[3]} unit={units[3]} />
       </div>
 
       {/* Avg. RQ / Avg. EE */}
       <div className="grid grid-cols-[1fr_auto_1fr] w-full">
-        <ValuePair label={baseReadings[4].label} value={displayValues[4]} unit={baseReadings[4].unit} />
+        <ValuePair label={labels[4]} value={prefixes[4] + displayValues[4]} unit={units[4]} />
         <div className="w-px bg-[#373b3d] self-stretch" />
-        <ValuePair label={baseReadings[5].label} value={displayValues[5]} unit={baseReadings[5].unit} />
+        <ValuePair label={labels[5]} value={prefixes[5] + displayValues[5]} unit={units[5]} />
       </div>
 
       {/* Avg. EE/m2 / Avg. EE/kg */}
       <div className="grid grid-cols-[1fr_auto_1fr] w-full">
-        <ValuePair label={baseReadings[6].label} value={displayValues[6]} unit={baseReadings[6].unit} />
+        <ValuePair label={labels[6]} value={prefixes[6] + displayValues[6]} unit={units[6]} />
         <div className="w-px bg-[#373b3d] self-stretch" />
-        <ValuePair label={baseReadings[7].label} value={displayValues[7]} unit={baseReadings[7].unit} />
+        <ValuePair label={labels[7]} value={prefixes[7] + displayValues[7]} unit={units[7]} />
       </div>
 
       <Divider />

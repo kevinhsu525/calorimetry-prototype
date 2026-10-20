@@ -409,6 +409,17 @@ export function generateSubChartWave(
 }
 
 /**
+ * Get raw data points for a specific time window
+ * Used to calculate real-time averages for the Readings panel
+ */
+export function getWindowData(title: string, startPercent: number, endPercent: number): number[] {
+  const data24h = getSubChart24hData(title);
+  const startIndex = Math.floor((startPercent / 100) * TOTAL_POINTS);
+  const endIndex = Math.min(Math.floor((endPercent / 100) * TOTAL_POINTS), TOTAL_POINTS);
+  return data24h.slice(startIndex, endIndex);
+}
+
+/**
  * Clear cached sub-chart data (MVexp data is kept fixed)
  */
 export function clearWaveformCache(): void {
