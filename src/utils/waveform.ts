@@ -11,19 +11,43 @@ const VCO2_METABOLIC_CYCLE = [110, 118, 128, 123, 112, 102, 96, 103, 115, 125, 1
 /**
  * Generate metabolic wave from cycle data points using linear interpolation
  * Creates smooth periodic waveform from discrete clinical data points
+ * Includes a 20-minute stable period to simulate realistic metabolic patterns
  */
-function generateMetabolicWave(cycleData: number[], totalPoints: number): number[] {
+function generateMetabolicWave(cycleData: number[], totalPoints: number, baseline: number): number[] {
   const result: number[] = [];
   const cycleLength = cycleData.length;
 
+  // Stable period: 20 minutes (20 points), at 40% into the data (~10 hours)
+  const stableStart = Math.floor(totalPoints * 0.4);
+  const stableEnd = stableStart + 20; // 20 minutes
+
+  // Transition size: 10 points (10 minutes)
+  const transitionSize = 10;
+
   for (let i = 0; i < totalPoints; i++) {
+    // Calculate fluctuating value from cycle data
     const position = (i / totalPoints) * cycleLength;
     const index = Math.floor(position) % cycleLength;
     const nextIndex = (index + 1) % cycleLength;
     const fraction = position - Math.floor(position);
+    const fluctuatingValue = cycleData[index] + fraction * (cycleData[nextIndex] - cycleData[index]);
 
-    const value = cycleData[index] + fraction * (cycleData[nextIndex] - cycleData[index]);
-    result.push(value);
+    if (i >= stableStart && i < stableEnd) {
+      // Stable period: baseline + tiny noise (<0.5%) to simulate natural variation
+      const tinyNoise = baseline * 0.005 * (Math.random() - 0.5);
+      result.push(baseline + tinyNoise);
+    } else if (i >= stableStart - transitionSize && i < stableStart) {
+      // Transition into stable period (smooth ramp down)
+      const t = (i - (stableStart - transitionSize)) / transitionSize;
+      result.push(fluctuatingValue * (1 - t) + baseline * t);
+    } else if (i >= stableEnd && i < stableEnd + transitionSize) {
+      // Transition out of stable period (smooth ramp up)
+      const t = (i - stableEnd) / transitionSize;
+      result.push(baseline * (1 - t) + fluctuatingValue * t);
+    } else {
+      // Fluctuating period: use cycle data
+      result.push(fluctuatingValue);
+    }
   }
 
   return result;
@@ -198,10 +222,10 @@ function getSubChart24hData(title: string): number[] {
   if (!cachedSubChartData[title]) {
     switch (title) {
       case 'VCO2':
-        cachedSubChartData[title] = generateMetabolicWave(VCO2_METABOLIC_CYCLE, TOTAL_POINTS);
+        cachedSubChartData[title] = generateMetabolicWave(VCO2_METABOLIC_CYCLE, TOTAL_POINTS, 110);
         break;
       case 'VO2':
-        cachedSubChartData[title] = generateMetabolicWave(VO2_METABOLIC_CYCLE, TOTAL_POINTS);
+        cachedSubChartData[title] = generateMetabolicWave(VO2_METABOLIC_CYCLE, TOTAL_POINTS, 145);
         break;
       case 'RQ': {
         // RQ = VCO2 / VO2
